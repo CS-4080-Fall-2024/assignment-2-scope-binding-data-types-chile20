@@ -1,0 +1,80 @@
+Question 1: A = B * (C * (A + B))
+Grammar:
+    Statement → Assignment | Expression
+    Assignment → Identifier = Expression
+    Expression → Expression + Term | Term
+    Term → Term * Factor | Factor
+    Factor → ( Expression ) | Identifier
+    Identifier → A | B | C
+---
+Derivation:
+    Statement → Assignment
+    Assignment → Identifier = Expression:  A = B * (C * (A + B))
+    Identifier → A
+    Expression → Term: B * (C * (A + B))
+    Term → Term * Factor
+    Term → Factor → Identifier → B
+    Factor → Expression: C * (A + B)
+    Expression → Term
+    Term → Term * Factor
+    Term → Factor → Identifier → C
+    Factor → Expression
+    Expression → Expression + Term: A + B
+    Expression → Term → Factor → Identifier → A
+    Term → Factor → Identifier → B
+---
+Tree representation:
+                      Statement
+                          |
+                     Assignment
+                    /    |      \
+          Identifier   =    Expression
+             |                |
+             A                Term
+                              |
+                    Term * Factor
+                   /     |        \
+         Identifier      *          Expression
+            |                            |
+            B                           Term
+                                         |
+                                 Term * Factor
+                                /     |        \
+                       Identifier      *          Expression
+                          |                            |
+                          C                         Expression + Term
+                                                    /         \
+                                             Identifier   Identifier
+                                                |               |
+                                                A               B
+Question 2:
+a. Using static scope, variables always refer to its top level environment.
+So we will ignore any additional
+assignment of u, v, w in the functions.
+    Global: u = 42; v = 69; w = 17
+    foo(u, 13)
+        with u = 42
+        bar(add)
+            add(v)
+                with v = 69 (top level)
+                u:= v + u + z = 69 + 42+ 69
+    So u = 69 + 42+ 69 = 180
+b. Using dynamic scope with deep binding, variables refer to the environment at the time
+procedure is passed as an argument
+    Global: u = 42; v = 69; w = 17
+    add | u = v + u + z = 69 + 42 + 42
+        with u = 42 from global scope since
+        u was not declared in foo
+        v = z = 42 = v from foo scope
+    bar | u = 17
+    foo | v = 42
+    So u = 42 + 42 + 42 = 126
+c. Using dynamic scope with shallow binding, variables refer to the environment at the
+time procedure is actually called
+    Global: u = 42; v = 69; w = 17
+    add | u = v + u + z = 69 + 42 + 42
+        with u = 17, v = 42, z = 42
+    bar | u = 17
+    foo | v = 42
+
+    So u = 17 + 42 + 42 = 101
