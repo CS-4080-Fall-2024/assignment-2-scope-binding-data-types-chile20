@@ -1,0 +1,115 @@
+Question 1: A = B * (C * (A + B))
+Grammar:
+    Statement → Assignment | Expression
+    Assignment → Identifier = Expression
+    Expression → Expression + Term | Term
+    Term → Term * Factor | Factor
+    Factor → ( Expression ) | Identifier
+    Identifier → A | B | C
+---
+Derivation:
+    Statement → Assignment
+    Assignment → Identifier = Expression:  A = B * (C * (A + B))
+    Identifier → A
+    Expression → Term: B * (C * (A + B))
+    Term → Term * Factor
+    Term → Factor → Identifier → B
+    Factor → Expression: C * (A + B)
+    Expression → Term
+    Term → Term * Factor
+    Term → Factor → Identifier → C
+    Factor → Expression
+    Expression → Expression + Term: A + B
+    Expression → Term → Factor → Identifier → A
+    Term → Factor → Identifier → B
+---
+Tree representation:
+                      Statement
+                         |
+                     Assignment
+                    /          \
+             Identifier  =  Expression
+                |                |
+                A               Term
+                                /  \
+		                    Term * Factor
+		                   /     |        \
+		    	        Factor   *         \
+			           /                    \
+		         Identifier                 Expression
+		            |                            |
+		            B                           Term
+											    /  \
+									        Term * Factor
+										    /            \
+						                Factor            \
+										/                  \
+								Identifier               Expression
+					                |                         |
+		                            C                    Expression + Term
+											                  /         \
+												             Term         |
+												              |           |
+							                                Factor      Factor
+												              |           |
+										                   Identifier   Identifier
+										                      |           |
+										                      A           B
+Question 2:
+a. Using static scope, variables always refer to its top level environment.
+So we will ignore any additional assignment of u, v, w in the functions.
+______________________________________
+| add(v)                              |
+______________________________________
+| bar (add)   |  u = 42 v = 69 w = 17 |
+______________________________________
+| foo (u, 13) |  u = 42 v = 69 w = 17 |
+_______________________________________
+| main        |  u = 42 v = 69 w = 17 |
+
+    Global: u = 42; v = 69; w = 17
+        Foo(x = u, w): local v = u = 42
+            Bar(Add): local u = w = 17
+                Add(z = v)
+                    u = v + u + z
+                    with v = 69, u = 42, z = v = 69 (global values)
+    So u = 69 + 42+ 69 = 180
+b. Using dynamic scope with deep binding, variables refer to the environment at the time
+procedure is passed as an argument
+______________________________________
+| add(v)                              |
+______________________________________
+| bar (add)   |  u = 42 v = 42 w = 17 |
+______________________________________
+| foo (u, 13) |  u = 42 v = 42 w = 17 |
+_______________________________________
+| main        |  u = 42 v = 69 w = 17 |
+    Global: u = 42; v = 69; w = 17
+        Foo(x = u, w): local v = u = 42
+            Bar(Add): local u = w = 17
+                Add(z = v)
+                    u = v + u + z
+                    with v = 42, z = v = 42 from Foo environment since it was where Add was passed as an argument
+                    with u = 42 from global scope since u was not declared in Foo
+    So u = 42 + 42 + 42 = 126
+
+c. Using dynamic scope with shallow binding, variables refer to the environment at the
+time procedure is actually called
+______________________________________
+| add(v)                              |
+______________________________________
+| bar (add)   |  u = 17 v = 42 w = 17 |
+______________________________________
+| foo (u, 13) |  u = 42 v = 42 w = 17 |
+_______________________________________
+| main        |  u = 42 v = 69 w = 17 |
+    Global: u = 42; v = 69; w = 17
+        Foo(x = u, w): local v = u = 42
+            Bar(Add): local u = w = 17
+                Add(z = v)
+                    u = v + u + z
+                    with v = 42, z = v = 42 from environment Bar. Since v is not re-assigned in Bar,
+                    local v in Bar = 42 (from environment Foo where Bar was called)
+                    with u = 17 from environment Bar where Add was called
+
+    So u = 42 + 17 + 42 = 101
